@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>AppLayout Help / Справка</title>
+<style>
+:root{color-scheme:light dark}body{font:17px/1.65 system-ui,sans-serif;max-width:740px;margin:64px auto;padding:0 24px}
+h1{font-size:36px;line-height:1.2}h2{margin-top:48px}code{font-size:.9em}a{color:LinkText}li{margin:.6em 0}
+aside{padding:16px 20px;border:1px solid GrayText;border-radius:12px}nav{display:flex;gap:20px}
+</style>
+<nav><a href="#en">English</a><a href="#ru">Русский</a></nav>
+<section id="en"><h1>AppLayout</h1><p>An input source for every app.</p>
+<ol><li>Open Settings from the keyboard icon in the menu bar.</li>
+<li>Add an app and select one of the input sources already enabled in macOS.</li>
+<li>Switch from a different app into it, then type to verify the result.</li></ol>
+<p>A manual source change stays until you leave and return. Apps without a rule keep the current source.
+Rules apply to an entire app, not individual windows, websites, or IDE projects.</p>
+<aside>In macOS Keyboard settings, turn off “Automatically switch to a document’s input source” for predictable switching.
+AppLayout never changes that system setting.</aside>
+<p>Launch at login is optional. Install AppLayout in a stable Applications location before enabling it.
+Pause stops automatic switching and persists across restarts. Quit ends the process completely.</p>
+<p>If a saved source is unavailable, enable it in macOS or select a different one. If settings cannot be read or saved,
+automatic switching pauses; recovery keeps a backup of the old settings.</p>
+<p>No typing is read. No background network requests are made. Settings stay on this Mac.</p></section>
+<section id="ru" lang="ru"><h2>Настройка AppLayout</h2>
+<ol><li>Открой настройки через значок клавиатуры в строке меню.</li>
+<li>Добавь Chrome и назначь русскую раскладку. Добавь PyCharm и назначь английскую.</li>
+<li>Перейди в приложение из другого и проверь ввод символов.</li></ol>
+<p>Ручной выбор сохраняется до ухода и возвращения. Без правила текущая раскладка не меняется.
+Правило действует для приложения целиком, без разделения на окна, сайты и проекты IDE.</p>
+<aside>Для предсказуемой работы отключи автоматическое переключение раскладки для документа в системных настройках клавиатуры.
+AppLayout не меняет эту настройку самостоятельно.</aside>
+<p>Автозапуск включается по желанию после переноса приложения в постоянную папку «Программы».
+Пауза сохраняется между запусками; команда «Завершить» полностью останавливает приложение.</p>
+<p>Если раскладка недоступна, включи её в macOS либо выбери другую. Ошибка чтения или сохранения настроек
+приостанавливает переключение; восстановление сохраняет резервную копию.</p>
+<p>Вводимый текст не читается. Фоновых запросов в сеть нет. Настройки остаются на Mac.</p></section>
+</html>

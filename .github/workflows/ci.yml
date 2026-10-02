@@ -1,0 +1,51 @@
+name: macOS build and tests
+
+on:
+  push:
+    branches: [main, 'codex/**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+          uname -m
+      - name: Check project and resources
+        run: |
+          python3 scripts/validate.py
+          python3 scripts/generate_project.py
+          git diff --exit-code -- AppLayout.xcodeproj
+      - name: Test rule engine and persistence
+        run: swift test
+      - name: Build local app
+        run: bash scripts/build.sh local
+      - name: Compile experimental sandbox variant
+        run: bash scripts/build.sh sandbox
+      - name: Package local testing build
+        run: |
+          mkdir -p build/artifacts
+          ditto -c -k --sequesterRsrc --keepParent build/local/Build/Products/Release/AppLayout.app build/artifacts/AppLayout-arm64-local.zip
+          shasum -a 256 build/artifacts/AppLayout-arm64-local.zip > build/artifacts/SHA256SUMS.txt
+      - name: Upload local testing build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: AppLayout-arm64-local
+          path: build/artifacts/
+          if-no-files-found: error
+          retention-days: 14
