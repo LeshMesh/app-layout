@@ -34,6 +34,7 @@ jobs:
       - name: Test rule engine and persistence
         run: swift test
       - name: Build local app
+        if: success() || failure()
         run: bash scripts/build.sh local
       - name: Compile experimental sandbox variant
         run: bash scripts/build.sh sandbox

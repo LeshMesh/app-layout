@@ -35,7 +35,8 @@ private func temporaryRepository() throws -> PreferencesRepository {
     try original.write(to: repository.fileURL)
     #expect(throws: (any Error).self) { try repository.load() }
     #expect(try Data(contentsOf: repository.fileURL) == original)
-    let backup = try #require(repository.backUpAndReset())
+    let savedBackup = try repository.backUpAndReset()
+    let backup = try #require(savedBackup)
     #expect(try Data(contentsOf: backup) == original)
     #expect(try repository.load() == Preferences())
 }

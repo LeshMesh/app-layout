@@ -27,21 +27,24 @@ private func policy() -> SwitchPolicy { SwitchPolicy(ownBundleIdentifier: utilit
 
 @Test func duplicateActivationPreservesManualChoiceAndPendingRequest() throws {
     var state = policy()
-    let request = try #require(state.activate(chrome, rules: rules))
+    let activation = state.activate(chrome, rules: rules)
+    let request = try #require(activation)
     #expect(state.activate(chrome, rules: rules) == nil)
     #expect(state.isCurrent(request, frontmost: chrome))
 }
 
 @Test func rapidSwitchInvalidatesPreviousRequestEvenForUnconfiguredApp() throws {
     var state = policy()
-    let stale = try #require(state.activate(chrome, rules: rules))
+    let activation = state.activate(chrome, rules: rules)
+    let stale = try #require(activation)
     #expect(state.activate(finder, rules: rules) == nil)
     #expect(!state.isCurrent(stale, frontmost: chrome))
 }
 
 @Test func requestCannotAffectDifferentFrontmostProcess() throws {
     var state = policy()
-    let request = try #require(state.activate(chrome, rules: rules))
+    let activation = state.activate(chrome, rules: rules)
+    let request = try #require(activation)
     #expect(!state.isCurrent(request, frontmost: ide))
     #expect(!state.isCurrent(request, frontmost: nil))
 }
@@ -55,7 +58,8 @@ private func policy() -> SwitchPolicy { SwitchPolicy(ownBundleIdentifier: utilit
 
 @Test func ownSettingsDoNotResetManualOverride() throws {
     var state = policy()
-    let request = try #require(state.activate(chrome, rules: rules))
+    let activation = state.activate(chrome, rules: rules)
+    let request = try #require(activation)
     #expect(state.activate(utility, rules: rules) == nil)
     #expect(!state.isCurrent(request, frontmost: chrome))
     #expect(state.activate(chrome, rules: rules) == nil)
@@ -64,7 +68,8 @@ private func policy() -> SwitchPolicy { SwitchPolicy(ownBundleIdentifier: utilit
 
 @Test func pauseCancelsPendingAndResumeCanApplyCurrentRule() throws {
     var state = policy()
-    let request = try #require(state.activate(chrome, rules: rules))
+    let activation = state.activate(chrome, rules: rules)
+    let request = try #require(activation)
     state.setPaused(true)
     #expect(!state.isCurrent(request, frontmost: chrome))
     #expect(state.activate(ide, rules: rules) == nil)
@@ -74,7 +79,8 @@ private func policy() -> SwitchPolicy { SwitchPolicy(ownBundleIdentifier: utilit
 
 @Test func inputSourceChangeCanCancelPendingWithoutChangingSavedRule() throws {
     var state = policy()
-    let request = try #require(state.activate(chrome, rules: rules))
+    let activation = state.activate(chrome, rules: rules)
+    let request = try #require(activation)
     state.invalidatePending()
     #expect(!state.isCurrent(request, frontmost: chrome))
     #expect(state.activate(chrome, rules: rules) == nil)
@@ -91,7 +97,8 @@ private func policy() -> SwitchPolicy { SwitchPolicy(ownBundleIdentifier: utilit
 
 @Test func unknownApplicationInvalidatesAndCountsAsLeaving() throws {
     var state = policy()
-    let request = try #require(state.activate(chrome, rules: rules))
+    let activation = state.activate(chrome, rules: rules)
+    let request = try #require(activation)
     #expect(state.activate(nil, rules: rules) == nil)
     #expect(!state.isCurrent(request, frontmost: chrome))
     #expect(state.activate(chrome, rules: rules)?.inputSourceID == "ru")
