@@ -9,7 +9,7 @@ fi
 
 variant="${1:-local}"
 case "$variant" in
-  local) extra=() ;;
+  local) extra=(ENABLE_APP_SANDBOX=NO) ;;
   sandbox) extra=(ENABLE_APP_SANDBOX=YES CODE_SIGN_ENTITLEMENTS=Resources/Sandbox.entitlements) ;;
   *) echo "Usage: bash scripts/build.sh [local|sandbox]" >&2; exit 1 ;;
 esac

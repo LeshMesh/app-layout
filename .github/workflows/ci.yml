@@ -36,6 +36,8 @@ jobs:
       - name: Build local app
         if: success() || failure()
         run: bash scripts/build.sh local
+      - name: Smoke test native app startup
+        run: python3 scripts/smoke_test.py
       - name: Compile experimental sandbox variant
         run: bash scripts/build.sh sandbox
       - name: Package local testing build
