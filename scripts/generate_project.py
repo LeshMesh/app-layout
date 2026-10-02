@@ -17,7 +17,7 @@ def add(label, value):
     objects.append(f"\t\t{uid(label)} = {{ {value} }};")
     return uid(label)
 
-sources = sorted((ROOT / "Sources").rglob("*.swift"))
+sources = sorted((ROOT / "Sources").rglob("*.swift"), key=lambda path: path.relative_to(ROOT).as_posix())
 source_refs = []
 source_builds = []
 for path in sources:
@@ -93,7 +93,7 @@ directory = ROOT / "AppLayout.xcodeproj"
 directory.mkdir(exist_ok=True)
 content = "// !$*UTF8*$!\n{\n\tarchiveVersion = 1;\n\tclasses = {};\n\tobjectVersion = 56;\n\tobjects = {\n"
 content += "\n".join(objects) + f"\n\t}};\n\trootObject = {project};\n}}\n"
-(directory / "project.pbxproj").write_text(content, encoding="utf-8")
+(directory / "project.pbxproj").write_text(content, encoding="utf-8", newline="\n")
 scheme_dir = directory / "xcshareddata/xcschemes"
 scheme_dir.mkdir(parents=True, exist_ok=True)
 reference = f'<BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{target}" BuildableName="AppLayout.app" BlueprintName="AppLayout" ReferencedContainer="container:AppLayout.xcodeproj"/>'
@@ -107,5 +107,5 @@ scheme = f'''<?xml version="1.0" encoding="UTF-8"?>
 <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"/>
 </Scheme>
 '''
-(scheme_dir / "AppLayout.xcscheme").write_text(scheme, encoding="utf-8")
+(scheme_dir / "AppLayout.xcscheme").write_text(scheme, encoding="utf-8", newline="\n")
 print(f"Generated Xcode project: {len(sources)} Swift source files")

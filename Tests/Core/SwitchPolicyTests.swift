@@ -103,3 +103,13 @@ private func policy() -> SwitchPolicy { SwitchPolicy(ownBundleIdentifier: utilit
                           inputSourceID: "com.apple.keylayout.RussianWin")]
     #expect(state.activate(chrome, rules: custom)?.inputSourceID == "com.apple.keylayout.RussianWin")
 }
+
+@Test func resumingFromSettingsAppliesWhenReturningToPreviousApp() {
+    var state = policy()
+    _ = state.activate(chrome, rules: rules)
+    _ = state.activate(utility, rules: rules)
+    state.setPaused(true)
+    state.setPaused(false)
+    #expect(state.activate(utility, rules: rules, force: true) == nil)
+    #expect(state.activate(chrome, rules: rules)?.inputSourceID == "ru")
+}

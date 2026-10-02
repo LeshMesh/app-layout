@@ -23,6 +23,7 @@ public struct SwitchPolicy: Sendable {
     private var observedApplication: ApplicationIdentity?
     private var lastExternalApplication: ApplicationIdentity?
     private var generation: UInt64 = 0
+    private var reevaluateAfterUtility = false
 
     public init(ownBundleIdentifier: String) {
         self.ownBundleIdentifier = ownBundleIdentifier
@@ -49,10 +50,15 @@ public struct SwitchPolicy: Sendable {
             return nil
         }
         // Opening our Settings must not reset a manual layout on return to the previous app.
-        guard application.bundleIdentifier != ownBundleIdentifier else { return nil }
+        guard application.bundleIdentifier != ownBundleIdentifier else {
+            if force { reevaluateAfterUtility = true }
+            return nil
+        }
+        let shouldReevaluate = force || reevaluateAfterUtility
+        reevaluateAfterUtility = false
         let sameExternalApplication = lastExternalApplication == application
         lastExternalApplication = application
-        guard !isPaused, force || !sameExternalApplication,
+        guard !isPaused, shouldReevaluate || !sameExternalApplication,
               let source = rules.first(where: {
                   $0.bundleIdentifier == application.bundleIdentifier
               })?.inputSourceID else { return nil }
