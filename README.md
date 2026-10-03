@@ -8,9 +8,9 @@ AppLayout applies the input source you choose when an application becomes active
 
 ## Status
 
-Version 1.0.0 adds a compact native settings interface with light/dark appearance, and launch at login enabled by default for new installations. Application switching was confirmed by the owner on an M1 Mac running macOS 26. The broader [acceptance checklist](docs/TESTING.md) records the remaining device-specific checks.
+Version 1.1.0 adds checkbox selection for multiple apps, an Add All action, and installation through our Homebrew tap. The compact native settings interface supports light/dark appearance, and launch at login defaults on for new installations. Application switching was confirmed by the owner on an M1 Mac running macOS 26. The broader [acceptance checklist](docs/TESTING.md) records the remaining device-specific checks.
 
-[Download 1.0.0](https://github.com/LeshMesh/app-layout/releases/tag/v1.0.0) · [Changelog](CHANGELOG.md)
+[Download 1.1.0](https://github.com/LeshMesh/app-layout/releases/tag/v1.1.0) · [Changelog](CHANGELOG.md)
 
 Default builds are **ad-hoc signed for local use**, not Developer ID signed or notarized. No Apple Developer Program membership is needed for the local build instructions below. Public distribution signing is a later milestone.
 
@@ -25,10 +25,34 @@ Default builds are **ad-hoc signed for local use**, not Developer ID signed or n
 - Removed/disabled sources are marked unavailable; the current source is kept.
 - Pause persists across restarts. Resuming or returning from sleep re-evaluates the current app.
 - Rules edited in Settings take effect on the next activation from another app.
+- Add several applications together or use Add All; new rules start as Leave unchanged.
 - English and Russian interface; launch at login defaults on and can be turned off.
 - No telemetry, keyboard hooks, text inspection, background network access, or third-party runtime dependencies.
 
 One rule applies to the entire application identified by Bundle ID. Browser tabs, URLs, IDE projects, remote desktops, virtual machines, and the pre-login screen are out of scope.
+
+## Install with Homebrew
+
+```sh
+brew install --cask leshmesh/tap/app-layout
+```
+
+Our [tap](https://github.com/LeshMesh/homebrew-tap) installs the same arm64 release archive. macOS 26+ is required. The app still uses an ad-hoc signature: Homebrew installation does not remove macOS Gatekeeper checks. Developer ID signing/notarization remain a separate milestone.
+
+If you installed AppLayout manually, quit it and move only the old AppLayout.app out of Applications before installing with Homebrew. Keep Application Support/AppLayout so your rules are retained.
+
+```sh
+brew update
+brew upgrade --cask leshmesh/tap/app-layout
+```
+
+Disable Launch at login and quit before uninstalling:
+
+```sh
+brew uninstall --cask leshmesh/tap/app-layout
+```
+
+Normal removal keeps your settings. Add `--zap` only if you also want to delete your rules and preferences.
 
 ## Build on your Mac
 
@@ -59,7 +83,7 @@ If command-line tools point to a different Xcode, choose the installed Xcode und
 5. In **System Settings → Keyboard → Text Input → Edit**, disable **Automatically switch to a document’s input source** for predictable rules. AppLayout does not change that preference.
 6. Switch from another app into Chrome or PyCharm, and type to verify the actual source.
 
-For an app outside the displayed folders, choose **Browse for an .app…**. Launch at login is enabled once on a fresh installation. You can turn it off in Settings; AppLayout never turns it back on automatically. macOS may require approval in Login Items. Upgrading from 0.1 preserves the existing macOS login setting; enable it once if desired.
+In the application picker, check several apps and press Add. Selection survives searching. **Add All** adds all discovered apps without a rule, including those hidden by search. Existing rules are preserved; new rules start as **Leave unchanged**. Choose each source afterwards. **Browse for .app files…** also accepts multiple apps. Launch at login is enabled once on a fresh installation. You can turn it off in Settings; AppLayout never turns it back on automatically. macOS may require approval in Login Items. Upgrading from 0.1 preserves the existing macOS login setting; enable it once if desired.
 
 ## Development
 
@@ -71,7 +95,7 @@ bash scripts/build.sh
 
 The Xcode project is checked in and opens without generators or package downloads. After adding or removing a Swift source/resource reference, run `python3 scripts/generate_project.py` and commit the generated project too. To redraw the original geometric icon, the optional `scripts/generate_icon.py` tool uses Pillow; normal builds use the checked-in PNGs and need no Pillow.
 
-CI on `macos-26` runs tests, builds the normal app and an experimental sandbox variant, launches the native app for a smoke check, and renders six settings previews in Russian/English and light/dark appearances (including empty and paused states). Preview fixtures never start switching or register a login item. Run `python3 scripts/render_settings.py` on a Mac to reproduce them.
+CI on `macos-26` runs tests, builds the normal app and an experimental sandbox variant, launches the native app for a smoke check, and renders ten settings/picker previews in Russian/English and light/dark appearances (including empty, paused, and multiple-selection states). Preview fixtures never start switching or register a login item. Run `python3 scripts/render_settings.py` on a Mac to reproduce them.
 
 Release archives are the **ad-hoc, unnotarized** normal build from the passing CI run. Native screenshots and unit tests do not replace testing actual input in other apps.
 

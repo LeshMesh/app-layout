@@ -319,78 +319,124 @@ struct ApplicationIcon: View {
     }
 }
 
-private struct ApplicationPickerView: View {
+struct ApplicationPickerView: View {
     @ObservedObject var model: AppModel
     @Environment(\.dismiss) private var dismiss
-    @State private var applications: [ApplicationCandidate] = []
+    @State private var applications: [ApplicationCandidate]
     @State private var search = ""
-    @State private var selection: String?
-    @State private var isLoading = true
+    @State private var selection: Set<String>
+    @State private var isLoading: Bool
     @State private var applicationError = false
 
-    private var availableApplications: [ApplicationCandidate] {
-        applications.filter { app in
-            app.id != AppModel.bundleIdentifier &&
-            !model.preferences.rules.contains(where: { $0.id == app.id }) &&
-            (search.isEmpty || app.name.localizedCaseInsensitiveContains(search) ||
-             app.id.localizedCaseInsensitiveContains(search))
+    // Optional fixtures also allow native previews without scanning the host's apps.
+    init(model: AppModel, applications: [ApplicationCandidate]? = nil, selection: Set<String> = []) {
+        self.model = model
+        _applications = State(initialValue: applications ?? [])
+        _selection = State(initialValue: selection)
+        _isLoading = State(initialValue: applications == nil)
+    }
+
+    private var unconfiguredApplications: [ApplicationCandidate] {
+        let configured = Set(model.preferences.rules.map(\.id))
+        return applications.filter { $0.id != AppModel.bundleIdentifier && !configured.contains($0.id) }
+    }
+
+    private var visibleApplications: [ApplicationCandidate] {
+        unconfiguredApplications.filter {
+            search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) ||
+                $0.id.localizedCaseInsensitiveContains(search)
         }
+    }
+
+    private var selectedApplications: [ApplicationCandidate] {
+        // Search only changes visibility, never the accumulated selection.
+        unconfiguredApplications.filter { selection.contains($0.id) }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 5) {
                 Text(model.text("picker.title")).font(.title2.weight(.semibold))
-                Text(model.text("picker.localOnly")).font(.callout).foregroundStyle(.secondary)
+                Text(model.text("picker.multipleHint")).font(.callout).foregroundStyle(.secondary)
             }
             TextField(model.text("picker.search"), text: $search)
                 .textFieldStyle(.roundedBorder)
             Group {
                 if isLoading {
                     ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if availableApplications.isEmpty {
+                } else if unconfiguredApplications.isEmpty {
+                    ContentUnavailableView {
+                        Label(model.text("picker.allAdded"), systemImage: "checkmark.circle")
+                    } description: {
+                        Text(model.text("picker.allAddedHint"))
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if visibleApplications.isEmpty {
                     ContentUnavailableView.search(text: search)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    List(availableApplications, selection: $selection) { app in
-                        HStack(spacing: 10) {
-                            ApplicationIcon(bundleIdentifier: app.bundleIdentifier)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(app.name)
-                                if applications.contains(where: { $0.id != app.id && $0.name == app.name }) {
-                                    Text(app.bundleIdentifier).font(.caption).foregroundStyle(.secondary)
+                    List(visibleApplications) { app in
+                        Toggle(isOn: Binding(
+                            get: { selection.contains(app.id) },
+                            set: { selected in
+                                if selected { selection.insert(app.id) }
+                                else { selection.remove(app.id) }
+                            }
+                        )) {
+                            HStack(spacing: 10) {
+                                ApplicationIcon(bundleIdentifier: app.bundleIdentifier)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(app.name)
+                                    if applications.contains(where: { $0.id != app.id && $0.name == app.name }) {
+                                        Text(app.bundleIdentifier).font(.caption).foregroundStyle(.secondary)
+                                    }
                                 }
+                                Spacer()
                             }
                         }
+                        .toggleStyle(.checkbox)
+                        .accessibilityLabel(app.name)
                         .help(app.bundleIdentifier)
                         .padding(.vertical, 4)
-                        .tag(app.id)
                     }
                     .listStyle(.inset)
                 }
             }
             .settingsSurface()
             HStack {
-                Button(model.text("action.browseApplication")) { browseApplication() }
+                Text(model.text("picker.newRulesHint")).font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                Button(model.text("action.addAll") + " (\(unconfiguredApplications.count))") {
+                    add(unconfiguredApplications)
+                }
+                .help(model.text("picker.addAllHelp"))
+                .disabled(isLoading || unconfiguredApplications.isEmpty || model.storageError != nil)
+            }
+            if model.storageError != nil {
+                Label(model.text("error.storage"), systemImage: "exclamationmark.triangle")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Divider()
+            HStack {
+                Button(model.text("action.browseApplications")) { browseApplications() }
+                    .disabled(model.storageError != nil)
                 Spacer()
                 Button(model.text("action.cancel")) { dismiss() }.keyboardShortcut(.cancelAction)
-                Button(model.text("action.add")) {
-                    if let app = availableApplications.first(where: { $0.id == selection }) {
-                        model.addApplication(app)
-                        dismiss()
-                    }
+                Button(model.text("action.add") + " (\(selectedApplications.count))") {
+                    add(selectedApplications)
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(!availableApplications.contains(where: { $0.id == selection }))
+                .disabled(isLoading || selectedApplications.isEmpty || model.storageError != nil)
             }
         }
         .padding(24)
-        .frame(width: 540, height: 460)
+        .frame(width: 570, height: 500)
         .background(Color(nsColor: .windowBackgroundColor))
-        .alert(model.text("error.application"), isPresented: $applicationError) {
+        .alert(model.text("error.applications"), isPresented: $applicationError) {
             Button(model.text("action.ok"), role: .cancel) {}
         }
         .task {
+            guard isLoading else { return }
             let running = ApplicationCatalog.runningApplications()
             let installed = await Task.detached(priority: .userInitiated) {
                 ApplicationCatalog.installedApplications()
@@ -402,20 +448,25 @@ private struct ApplicationPickerView: View {
         }
     }
 
-    private func browseApplication() {
+    private func add(_ applications: [ApplicationCandidate]) {
+        guard !applications.isEmpty else { return }
+        if model.addApplications(applications) { dismiss() }
+    }
+
+    private func browseApplications() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.applicationBundle]
-        panel.allowsMultipleSelection = false
+        panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
         panel.directoryURL = URL(fileURLWithPath: "/Applications")
         panel.prompt = model.text("action.add")
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        guard let candidate = ApplicationCatalog.candidate(at: url),
-              candidate.bundleIdentifier != AppModel.bundleIdentifier else {
+        guard panel.runModal() == .OK else { return }
+        let candidates = panel.urls.compactMap(ApplicationCatalog.candidate)
+        guard candidates.count == panel.urls.count,
+              candidates.allSatisfy({ $0.bundleIdentifier != AppModel.bundleIdentifier }) else {
             applicationError = true
             return
         }
-        model.addApplication(candidate)
-        dismiss()
+        add(selectedApplications + candidates)
     }
 }

@@ -62,3 +62,11 @@
 "general.title" = "Основные";
 "privacy.local" = "Только на этом Mac";
 "action.close" = "Закрыть";
+"picker.multipleHint" = "Отметь приложения и добавь их одним нажатием.";
+"picker.newRulesHint" = "Новые правила — «Не менять».";
+"action.addAll" = "Добавить все";
+"picker.addAllHelp" = "Добавить все найденные приложения, включая скрытые поиском.";
+"action.browseApplications" = "Выбрать файлы .app…";
+"picker.allAdded" = "Список пуст";
+"picker.allAddedHint" = "Все найденные приложения уже добавлены. Другие можно выбрать через файлы .app.";
+"error.applications" = "Не удалось добавить выбранные приложения. Выбери корректные файлы .app, кроме самого AppLayout. Ничего не добавлено.";

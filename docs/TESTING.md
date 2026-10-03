@@ -75,3 +75,18 @@ CI checks are separate: they compile and launch the native app, run core tests, 
 Build `bash scripts/build.sh sandbox`, quit the normal app, and run only that variant. Repeat the switching matrix, including already-focused input fields in Chrome and PyCharm. Verify application discovery and file-picker access. Record actual typed output, not just the menu bar source icon. Sandbox and normal preferences live in different locations; configure rules in each build.
 
 If sandbox switching fails, keep the normal build and report the exact context. Do not claim App Store compatibility or add new permissions as an unreviewed workaround.
+
+## Batch selection (1.1)
+
+- [ ] Check two apps and add: both appear with Leave unchanged.
+- [ ] Select an app, search for another and select it: both stay selected and are added.
+- [ ] Add All with a search active: all discovered unconfigured apps are added.
+- [ ] Existing rules keep their assignments; duplicate app bundles produce one rule.
+- [ ] Browse accepts multiple .app bundles and combines them with the checked apps.
+- [ ] Cancel does not change rules; all-added and no-search-result states remain usable.
+- [ ] Assign different sources to the newly added apps and verify switching.
+- [ ] Test checkbox accessibility and keyboard operation with VoiceOver.
+
+## Homebrew
+
+The tap CI tests installation of the published archive, version metadata, preserved settings on ordinary uninstall, reinstall, and explicit zap cleanup. This does not establish Gatekeeper approval or successful interactive first launch. The release remains ad-hoc signed.

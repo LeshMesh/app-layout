@@ -103,3 +103,49 @@ private func temporaryRepository() throws -> PreferencesRepository {
     let shouldRegister = recovered.consumeLoginItemDefault()
     #expect(!shouldRegister)
 }
+
+@Test func batchAddsUnconfiguredRulesWithoutReplacingExistingAssignments() throws {
+    var preferences = Preferences()
+    preferences.rules = [AppRule(bundleIdentifier: "chrome", displayName: "Chrome", inputSourceID: "ru")]
+    let changed = preferences.addRules([
+        AppRule(bundleIdentifier: "pycharm", displayName: "PyCharm"),
+        AppRule(bundleIdentifier: "chrome", displayName: "Chrome"),
+        AppRule(bundleIdentifier: "safari", displayName: "Safari"),
+        AppRule(bundleIdentifier: "pycharm", displayName: "PyCharm duplicate")
+    ])
+    #expect(changed)
+    #expect(preferences.rules.map(\.bundleIdentifier) == ["chrome", "pycharm", "safari"])
+    #expect(preferences.rules.first?.inputSourceID == "ru")
+    #expect(preferences.rules.dropFirst().allSatisfy { $0.inputSourceID == nil })
+    _ = try preferences.validated()
+}
+
+@Test func repeatedOrEmptyBatchPreservesPreferences() {
+    var preferences = Preferences()
+    preferences.rules = [AppRule(bundleIdentifier: "app", displayName: "App", inputSourceID: "en")]
+    preferences.isPaused = true
+    let original = preferences
+    let emptyChanged = preferences.addRules([])
+    let repeatedChanged = preferences.addRules([AppRule(bundleIdentifier: "app", displayName: "Renamed")])
+    #expect(!emptyChanged)
+    #expect(!repeatedChanged)
+    #expect(preferences == original)
+}
+
+@Test func batchPersistsAndEachNewRuleCanHaveAnIndependentSource() throws {
+    let repository = try temporaryRepository()
+    defer { try? FileManager.default.removeItem(at: repository.fileURL.deletingLastPathComponent()) }
+    var preferences = Preferences()
+    preferences.addRules([
+        AppRule(bundleIdentifier: "chrome", displayName: "Chrome"),
+        AppRule(bundleIdentifier: "pycharm", displayName: "PyCharm")
+    ])
+    try repository.save(preferences)
+    var reloaded = try repository.load()
+    #expect(reloaded.rules.count == 2)
+    #expect(reloaded.rules.allSatisfy { $0.inputSourceID == nil })
+    reloaded.rules[0].inputSourceID = "ru"
+    reloaded.rules[1].inputSourceID = "en"
+    try repository.save(reloaded)
+    #expect(try repository.load() == reloaded)
+}

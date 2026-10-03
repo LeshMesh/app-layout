@@ -127,13 +127,15 @@ final class AppModel: NSObject, ObservableObject {
         commit(next)
     }
 
-    func addApplication(_ app: ApplicationCandidate) {
-        guard app.bundleIdentifier != Self.bundleIdentifier,
-              !preferences.rules.contains(where: { $0.id == app.id }) else { return }
+    @discardableResult
+    func addApplications(_ applications: [ApplicationCandidate]) -> Bool {
+        guard storageError == nil else { return false }
+        let additions = applications
+            .filter { $0.bundleIdentifier != Self.bundleIdentifier }
+            .map { AppRule(bundleIdentifier: $0.bundleIdentifier, displayName: $0.name) }
         var next = preferences
-        next.rules.append(AppRule(bundleIdentifier: app.bundleIdentifier, displayName: app.name))
-        next.rules.sort { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
-        commit(next)
+        guard next.addRules(additions) else { return true }
+        return commit(next) // One atomic write for the entire batch.
     }
 
     func setInputSource(_ sourceID: String?, for bundleID: String) {

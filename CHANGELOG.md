@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 — 2026-10-03
+
+- Added checkbox selection for multiple applications; search preserves the current selection.
+- Added Add All for every discovered application without a rule, including search-hidden apps.
+- Enabled multi-file selection in Browse. Batch additions save atomically, preserve existing assignments and deduplicate bundle IDs. New rules leave the input source unchanged until configured.
+- Added a Homebrew cask in `leshmesh/tap` for installation, upgrades and optional settings removal.
+- Added batch persistence tests and four native picker previews to CI.
+
 ## 1.0.0 — 2026-10-03
 
 - Redesigned native settings: compact application rows, system light/dark appearance, grouped controls, and contextual help.

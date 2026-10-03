@@ -62,3 +62,11 @@
 "general.title" = "General";
 "privacy.local" = "Only on this Mac";
 "action.close" = "Close";
+"picker.multipleHint" = "Select applications and add them together.";
+"picker.newRulesHint" = "New rules leave the input source unchanged.";
+"action.addAll" = "Add All";
+"picker.addAllHelp" = "Add all discovered applications, including those hidden by search.";
+"action.browseApplications" = "Browse for .app files…";
+"picker.allAdded" = "No applications to add";
+"picker.allAddedHint" = "All discovered applications have rules. Use Browse to add apps from other locations.";
+"error.applications" = "Could not add the selected applications. Choose valid .app bundles other than AppLayout itself. Nothing was added.";

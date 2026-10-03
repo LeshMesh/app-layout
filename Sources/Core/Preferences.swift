@@ -50,6 +50,17 @@ public struct Preferences: Codable, Equatable, Sendable {
         return true
     }
 
+    /// Merge a batch without replacing existing rules or introducing duplicate bundle IDs.
+    @discardableResult
+    public mutating func addRules(_ additions: [AppRule]) -> Bool {
+        var identifiers = Set(rules.map(\.bundleIdentifier))
+        let newRules = additions.filter { identifiers.insert($0.bundleIdentifier).inserted }
+        guard !newRules.isEmpty else { return false }
+        rules.append(contentsOf: newRules)
+        rules.sort { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
+        return true
+    }
+
     public func validated() throws -> Preferences {
         guard schemaVersion == 1 else { throw PreferencesError.unsupportedVersion(schemaVersion) }
         var identifiers = Set<String>()

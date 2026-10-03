@@ -23,7 +23,7 @@ with (app / "Contents/Info.plist").open("wb") as stream:
         "CFBundleExecutable": "AppLayoutPreview",
         "CFBundleName": "AppLayoutPreview",
         "CFBundlePackageType": "APPL",
-        "CFBundleShortVersionString": "1.0.0",
+        "CFBundleShortVersionString": "1.1.0",
         "LSUIElement": True,
         "LSMinimumSystemVersion": "26.0",
     }, stream)
