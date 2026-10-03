@@ -2,11 +2,13 @@
 
 Record the Mac model, exact macOS version, Xcode version, app commit, Chrome/PyCharm versions, exact input-source names, and whether App Sandbox is enabled. Do not post passwords, text contents, or unrelated private app names.
 
-**Status: live checks below are not yet verified.** CI checks are listed separately and do not check actual keyboard input or menu appearance.
+**User verification:** the owner reported correct application switching on an M1 Mac running macOS 26 before the 1.0 UI update. Exact OS patch, application versions and the individual cases below were not recorded; the checkboxes therefore remain open. The switching engine is unchanged in 1.0.
+
+CI checks are separate: they compile and launch the native app, run core tests, and render settings for visual inspection. They do not type into Chrome/PyCharm, perform a real login, or establish VoiceOver behavior.
 
 ## Automated
 
-- `swift test`: activation rule decisions, duplicate events, stale work, manual-change cancellation, unknown apps, utility settings, restart PIDs, pause/resume, exact source IDs, storage round trips and recovery.
+- `swift test`: activation rule decisions, duplicate events, stale work, manual-change cancellation, unknown apps, utility settings, restart PIDs, pause/resume, exact source IDs, storage round trips and recovery, one-time login initialization and migration from 0.1.
 - `python3 scripts/validate.py`: property lists, matching localization keys, referenced local assets.
 - GitHub Actions: compile arm64 with a macOS 26 SDK or later, verify ad-hoc signature, build normal and sandbox variants, package the normal build for local testing.
 - Regenerate the Xcode project and assert that the checked-in version matches.
@@ -47,7 +49,10 @@ Record the Mac model, exact macOS version, Xcode version, app commit, Chrome/PyC
 - [ ] Resume evaluates the current app on the next activation when Settings is focused.
 - [ ] Sleep/wake and switch user away/back: no stale request executes in an inactive session.
 - [ ] Restart configured apps: their rules still work.
-- [ ] Launch at login defaults off; enabling/disabling is reflected in macOS Login Items.
+- [ ] A fresh installation enables Launch at login; approve in macOS if requested. Quit/reopen and log out/in to verify.
+- [ ] Turn Launch at login off, quit/reopen: it stays off.
+- [ ] Upgrade 0.1 with the item enabled and disabled: each system choice and existing rules are preserved.
+- [ ] Settings recovery does not enable a previously disabled login item.
 - [ ] Disable the item in System Settings: the app does not re-enable it.
 - [ ] Close Settings: the menu item and automation continue. Quit: the process exits.
 - [ ] Uninstall after disabling login item: no background helper remains.

@@ -79,11 +79,11 @@ target_configs = configuration_list("target", {
     "ARCHS": "arm64", "ONLY_ACTIVE_ARCH": "YES",
     "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
     "CODE_SIGN_IDENTITY": "-", "CODE_SIGN_STYLE": "Manual",
-    "COMBINE_HIDPI_IMAGES": "YES", "CURRENT_PROJECT_VERSION": "1",
+    "COMBINE_HIDPI_IMAGES": "YES", "CURRENT_PROJECT_VERSION": "2",
     "ENABLE_APP_SANDBOX": "NO", "ENABLE_HARDENED_RUNTIME": "YES",
     "GENERATE_INFOPLIST_FILE": "NO", "INFOPLIST_FILE": "Resources/Info.plist",
     "LD_RUNPATH_SEARCH_PATHS": "$(inherited) @executable_path/../Frameworks",
-    "MARKETING_VERSION": "0.1.0", "PRODUCT_BUNDLE_IDENTIFIER": "dev.leshmesh.AppLayout",
+    "MARKETING_VERSION": "1.0.0", "PRODUCT_BUNDLE_IDENTIFIER": "dev.leshmesh.AppLayout",
     "PRODUCT_NAME": "$(TARGET_NAME)", "SWIFT_EMIT_LOC_STRINGS": "NO",
 })
 target = add("target", f"isa = PBXNativeTarget; buildConfigurationList = {target_configs}; buildPhases = ({sources_phase},{frameworks_phase},{resources_phase},); buildRules = (); dependencies = (); name = AppLayout; productName = AppLayout; productReference = {product}; productType = \"com.apple.product-type.application\";")

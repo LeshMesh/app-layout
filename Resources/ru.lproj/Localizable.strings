@@ -55,3 +55,10 @@
 "action.minimize" = "Свернуть";
 "action.zoom" = "Изменить масштаб";
 "action.help" = "Справка AppLayout";
+"automation.activeHint" = "При переходе в другое приложение";
+"automation.pausedHint" = "Раскладка остаётся под твоим управлением";
+"help.heading" = "Как работает переключение";
+"rules.footnote" = "В остальных приложениях раскладка не меняется.";
+"general.title" = "Основные";
+"privacy.local" = "Только на этом Mac";
+"action.close" = "Закрыть";

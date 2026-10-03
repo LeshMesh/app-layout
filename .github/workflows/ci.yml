@@ -38,14 +38,23 @@ jobs:
         run: bash scripts/build.sh local
       - name: Smoke test native app startup
         run: python3 scripts/smoke_test.py
+      - name: Render native settings in both languages and appearances
+        run: python3 scripts/render_settings.py
+      - name: Upload settings previews
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: AppLayout-settings-previews
+          path: build/screenshots/
+          if-no-files-found: error
+          retention-days: 14
       - name: Compile experimental sandbox variant
         run: bash scripts/build.sh sandbox
-      - name: Package local testing build
+      - name: Package ad-hoc build
         run: |
           mkdir -p build/artifacts
           ditto -c -k --sequesterRsrc --keepParent build/local/Build/Products/Release/AppLayout.app build/artifacts/AppLayout-arm64-local.zip
           shasum -a 256 build/artifacts/AppLayout-arm64-local.zip > build/artifacts/SHA256SUMS.txt
-      - name: Upload local testing build
+      - name: Upload ad-hoc build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: AppLayout-arm64-local

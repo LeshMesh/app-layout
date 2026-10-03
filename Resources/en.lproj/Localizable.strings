@@ -55,3 +55,10 @@
 "action.minimize" = "Minimize";
 "action.zoom" = "Zoom";
 "action.help" = "AppLayout Help";
+"automation.activeHint" = "Applies when you switch to an app";
+"automation.pausedHint" = "Your input source stays as you choose it";
+"help.heading" = "How switching works";
+"rules.footnote" = "Other apps keep your current input source.";
+"general.title" = "General";
+"privacy.local" = "Only on this Mac";
+"action.close" = "Close";

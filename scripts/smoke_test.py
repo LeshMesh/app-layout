@@ -27,6 +27,7 @@ try:
         assert settings.exists(), "First launch did not create settings"
         preferences = json.loads(settings.read_text())
         assert preferences["hasCompletedWelcome"] is True
+        assert preferences["hasInitializedLoginItem"] is True
         assert preferences["rules"] == []
         assert preferences["isPaused"] is False
         print("Native app remained alive; first-launch settings and bundled resources verified.")

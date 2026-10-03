@@ -22,9 +22,33 @@ public struct Preferences: Codable, Equatable, Sendable {
     public var language: InterfaceLanguage = .system
     public var isPaused: Bool = false
     public var hasCompletedWelcome: Bool = false
+    public var hasInitializedLoginItem: Bool = false
     public var rules: [AppRule] = []
 
     public init() {}
+
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion, language, isPaused, hasCompletedWelcome, hasInitializedLoginItem, rules
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        language = try container.decode(InterfaceLanguage.self, forKey: .language)
+        isPaused = try container.decode(Bool.self, forKey: .isPaused)
+        hasCompletedWelcome = try container.decode(Bool.self, forKey: .hasCompletedWelcome)
+        rules = try container.decode([AppRule].self, forKey: .rules)
+        // v0.1 did not record login-item choices. Preserve an existing installation's OS setting.
+        hasInitializedLoginItem = try container.decodeIfPresent(Bool.self, forKey: .hasInitializedLoginItem)
+            ?? hasCompletedWelcome
+    }
+
+    /// Persist this change before asking macOS to register. Failed attempts must not recur silently.
+    public mutating func consumeLoginItemDefault() -> Bool {
+        guard !hasInitializedLoginItem else { return false }
+        hasInitializedLoginItem = true
+        return true
+    }
 
     public func validated() throws -> Preferences {
         guard schemaVersion == 1 else { throw PreferencesError.unsupportedVersion(schemaVersion) }
@@ -76,7 +100,9 @@ public struct PreferencesRepository: Sendable {
             try FileManager.default.copyItem(at: fileURL, to: destination)
             backup = destination
         }
-        try save(Preferences())
+        var reset = Preferences()
+        reset.hasInitializedLoginItem = true // Recovery must not override macOS Login Items.
+        try save(reset)
         return backup
     }
 }

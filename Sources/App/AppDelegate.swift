@@ -115,10 +115,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             edit.addItem(NSMenuItem(title: model.text(key), action: Selector(action), keyEquivalent: shortcut))
         }
         let windows = submenu(model.text("menu.window"))
-        windows.addItem(NSMenuItem(title: model.text("action.minimize"),
-                                  action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m"))
-        windows.addItem(NSMenuItem(title: model.text("action.zoom"),
-                                  action: #selector(NSWindow.performZoom(_:)), keyEquivalent: ""))
+        windows.addItem(NSMenuItem(title: model.text("action.close"),
+                                  action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w"))
         NSApp.windowsMenu = windows
         let help = submenu(model.text("menu.help"))
         addMenuItem(help, key: "action.help", action: #selector(showHelp))
@@ -140,12 +138,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc func showSettings() {
         if settingsWindow == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 780, height: 650),
-                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                contentRect: NSRect(x: 0, y: 0, width: 700, height: 700),
+                styleMask: [.titled, .closable, .resizable],
                 backing: .buffered, defer: false
             )
             window.title = model.text("settings.title")
-            window.minSize = NSSize(width: 700, height: 560)
+            window.contentMinSize = NSSize(width: 660, height: 640)
+            window.standardWindowButton(.miniaturizeButton)?.isEnabled = false
+            window.standardWindowButton(.zoomButton)?.isEnabled = false
             window.isReleasedWhenClosed = false
             window.contentView = NSHostingView(rootView: SettingsView(model: model))
             window.center()

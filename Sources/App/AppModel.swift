@@ -41,6 +41,34 @@ final class AppModel: NSObject, ObservableObject {
         policy.setPaused(isPaused)
     }
 
+    var interfaceLocale: Locale {
+        preferences.language == .system ? .autoupdatingCurrent : Locale(identifier: preferences.language.rawValue)
+    }
+
+    #if APP_LAYOUT_PREVIEW
+    func preparePreview(language: InterfaceLanguage, empty: Bool = false, paused: Bool = false) {
+        preferences = Preferences()
+        preferences.language = language
+        preferences.isPaused = paused
+        preferences.hasInitializedLoginItem = true
+        preferences.rules = empty ? [] : [
+            AppRule(bundleIdentifier: "com.google.Chrome", displayName: "Google Chrome",
+                    inputSourceID: "com.apple.keylayout.Russian"),
+            AppRule(bundleIdentifier: "com.jetbrains.pycharm", displayName: "PyCharm",
+                    inputSourceID: "com.apple.keylayout.ABC"),
+            AppRule(bundleIdentifier: "com.apple.Safari", displayName: "Safari",
+                    inputSourceID: nil)
+        ]
+        inputSources = [
+            InputSourceOption(id: "com.apple.keylayout.ABC", name: "ABC"),
+            InputSourceOption(id: "com.apple.keylayout.Russian", name: language == .ru ? "Русская" : "Russian")
+        ]
+        currentSourceID = "com.apple.keylayout.Russian"
+        loginStatus = .enabled
+        storageError = nil
+    }
+    #endif
+
     func text(_ key: String) -> String { L10n.string(key, language: preferences.language) }
 
     func start() {
@@ -66,6 +94,7 @@ final class AppModel: NSObject, ObservableObject {
                                 object: nil)
         refreshSources()
         handleActivation(NSWorkspace.shared.frontmostApplication, force: true)
+        initializeLoginItemDefault()
     }
 
     func stop() {
@@ -145,8 +174,21 @@ final class AppModel: NSObject, ObservableObject {
 
     func refreshLoginStatus() { loginStatus = SMAppService.mainApp.status }
 
+    private func initializeLoginItemDefault() {
+        guard storageError == nil else { return }
+        var next = preferences
+        guard next.consumeLoginItemDefault(), commit(next) else { return }
+        refreshLoginStatus()
+        if loginStatus == .notRegistered { setLaunchAtLogin(true) }
+    }
+
     func setLaunchAtLogin(_ enabled: Bool) {
-        guard !isUpdatingLogin else { return }
+        guard !isUpdatingLogin, storageError == nil else { return }
+        if !preferences.hasInitializedLoginItem {
+            var next = preferences
+            _ = next.consumeLoginItemDefault()
+            guard commit(next) else { return }
+        }
         isUpdatingLogin = true
         Task { @MainActor in
             defer {

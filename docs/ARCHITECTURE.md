@@ -33,7 +33,9 @@ Exact enabled source IDs are persisted, including selectable IME modes. Sources 
 
 ## Login item
 
-SMAppService.mainApp is the only autostart mechanism. No LaunchAgent plist, helper daemon, root process, or administrator prompt. The UI reads the OS registration state and handles requiresApproval. It does not re-register automatically after the user disables it.
+SMAppService.mainApp is the only autostart mechanism. No LaunchAgent plist, helper daemon, root process, or administrator prompt. The UI reads the OS registration state and handles requiresApproval. A fresh installation persists `hasInitializedLoginItem` before attempting registration once. A failed attempt is surfaced locally, with no automatic retry. The actual toggle follows macOS status, not a duplicate stored boolean. `requiresApproval` is respected, including when macOS disabled an existing item.
+
+Files from 0.1 have no marker: a completed welcome is migrated to initialized, preserving the existing system preference. An incomplete first launch receives the new default. Settings recovery marks initialization complete so it cannot undo a disabled login item. The app does not re-register automatically after the user disables it.
 
 ## Sandbox decision
 
